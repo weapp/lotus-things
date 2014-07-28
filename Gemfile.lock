@@ -1,0 +1,109 @@
+GIT
+  remote: git://github.com/lotus/controller.git
+  revision: c95dd0642884e9ac3563dac1e1c947ae724741a2
+  specs:
+    lotus-controller (0.2.0)
+      lotus-utils (~> 0.2)
+      rack (~> 1.5)
+
+GIT
+  remote: git://github.com/lotus/helpers.git
+  revision: f11a64a44bd42db51da990437af128ab501d9d5a
+  specs:
+    lotus-helpers (0.0.0)
+
+GIT
+  remote: git://github.com/lotus/lotus.git
+  revision: 3b1be6f5d98ae43c8d2baa3317790522bb4a1190
+  specs:
+    lotusrb (0.1.0)
+      lotus-controller (~> 0.2)
+      lotus-router (~> 0.1, >= 0.1.1)
+      lotus-utils (~> 0.2)
+      lotus-view (~> 0.2)
+      thor (= 0.19.1)
+
+GIT
+  remote: git://github.com/lotus/model.git
+  revision: ad4de0dbdaaaa3746c25af6f3fd4ac3135476443
+  specs:
+    lotus-model (0.1.2)
+      lotus-utils (~> 0.2)
+      sequel (~> 4.9)
+
+GIT
+  remote: git://github.com/lotus/router.git
+  revision: 31a5c9cd5d5e37869b5070615de11e9536c0a454
+  specs:
+    lotus-router (0.1.1)
+      http_router (~> 0.11)
+      lotus-utils (~> 0)
+
+GIT
+  remote: git://github.com/lotus/utils.git
+  revision: 46b39e3dd7120bb9f054957c4466eb905cf9eadc
+  specs:
+    lotus-utils (0.2.0)
+
+GIT
+  remote: git://github.com/lotus/view.git
+  revision: e3e60895205598ac94a186ce623d9af521ed3271
+  specs:
+    lotus-view (0.2.0)
+      lotus-utils (~> 0.2)
+      tilt (~> 2.0, >= 2.0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activesupport (4.1.4)
+      i18n (~> 0.6, >= 0.6.9)
+      json (~> 1.7, >= 1.7.7)
+      minitest (~> 5.1)
+      thread_safe (~> 0.1)
+      tzinfo (~> 1.1)
+    cancancan (1.8.4)
+    display_case (0.1.0)
+    excon (0.33.0)
+    http_router (0.11.1)
+      rack (>= 1.0.0)
+      url_mount (~> 0.2.1)
+    i18n (0.6.11)
+    json (1.8.1)
+    minitest (5.4.0)
+    multi_json (1.10.1)
+    neography (1.5.2)
+      excon (~> 0.33.0)
+      json (>= 1.7.7)
+      multi_json (>= 1.3.2)
+      os (>= 0.9.6)
+      rake (>= 0.8.7)
+      rubyzip (>= 1.0.0)
+    os (0.9.6)
+    rack (1.5.2)
+    rake (10.3.2)
+    rubyzip (1.1.6)
+    sequel (4.12.0)
+    thor (0.19.1)
+    thread_safe (0.3.4)
+    tilt (2.0.1)
+    tzinfo (1.2.1)
+      thread_safe (~> 0.1)
+    url_mount (0.2.1)
+      rack
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activesupport (~> 4.1.4)
+  cancancan (~> 1.8)
+  display_case
+  lotus-controller!
+  lotus-helpers!
+  lotus-model!
+  lotus-router!
+  lotus-utils!
+  lotus-view!
+  lotusrb!
+  neography
