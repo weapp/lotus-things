@@ -21,6 +21,131 @@ Neography.configure do |config|
   config.http_receive_timeout = 1200
 end
 
+
+class Statment
+
+  def initialize(clause)
+    @clause = clause
+    @predicates = []
+  end
+
+  def add (predicate, opts)
+    @predicates << send("parse_#{predicate.class}", predicate, opts)    
+  end
+
+  def parse_Fixnum predicate, opts
+    predicate
+  end
+
+  def parse_String predicate, opts
+    predicate.gsub(/\?/, "%s") % opts.map{|prop| to_prop_string(prop)}
+  end
+
+  def parse_Sym predicate, opts
+    predicate.to_s
+  end
+
+  def join
+    @predicates.join(", ") 
+  end
+
+  def to_prop_string(props)
+    if props.is_a? Hash
+      hash_to_prop_string(props)
+    elsif props.is_a? String
+      string_to_prop_string(props)
+    else
+      props.to_s
+    end
+  end
+
+  def string_to_prop_string(value, raw=false)
+    escaped_string = value.gsub(/['"]/) { |s| "\\#{s}" } if value.is_a?(String) && !raw
+    val = value.is_a?(String) && !raw ? "'#{escaped_string}'" : value
+  end
+
+  def hash_to_prop_string(props)
+    key_values = props.keys.map do |key|
+      raw = key.to_s[0, 1] == '_'
+      value = props[key]
+      val = string_to_prop_string(value, raw)
+      "#{raw ? key.to_s[1..-1] : key} : #{val}"
+    end
+    "{#{key_values.join(', ')}}"
+  end
+
+  def inspect
+    @predicates.inspect
+  end
+end
+
+class Query
+  attr_accessor :collection, :repository, :adapter, :statements
+  def initialize(collection, repository, adapter)
+    self.collection, self.repository, self.adapter = collection, repository, adapter
+    self.statements = Hash.new()
+  end
+
+  def statement clause, predicate, *opts
+    self.statements[clause] ||= Statment.new(clause)
+    self.statements[clause].add(predicate, opts)
+    self
+  end
+
+  def match *args
+    statement :MATCH, *args
+  end
+
+  def optional_match *args
+    statement :"OPTIONAL MATCH", *args
+  end
+
+  def where *args
+    statement :WHERE, *args
+  end
+
+  def return *args
+    statement :RETURN, *args
+  end
+
+  def return_node *fields
+    fields.each do |field| 
+      self.return("id(#{field}) as #{field}_id, labels(#{field}) as #{field}_labels, #{field}")
+    end
+    self
+  end
+
+  def return_rel *fields
+    fields.each do |field| 
+      self.return("id(#{field}) as #{field}_id, type(#{field}) as #{field}_type, #{field}")
+    end
+    self
+  end
+
+  def order_by *args
+    statement :"ORDER BY", *args
+  end
+
+  def limit *args
+    statement :LIMIT, *args
+  end
+
+  def execute
+    adapter.execute_query(self)
+  end
+
+  def to_cypher
+    sorted_statements.map{|k, v| "#{k} #{v.join}"}.join(" ")
+  end
+
+  private
+  CLAUSES = [:START, :MATCH, :"OPTIONAL MATCH", :CREATE, :WHERE, :WITH, :FOREACH, :SET, :DELETE, :REMOVE, :RETURN, :"ORDER BY", :SKIP, :LIMIT]
+
+  def sorted_statements
+    self.statements.sort_by { |clause, params| CLAUSES.index(clause) }
+  end
+end
+
 class Neo4JAdapter
   def initialize(rest_client = Neography::Rest)
     @neo = rest_client.new
@@ -87,8 +212,25 @@ class Neo4JAdapter
     @neo.execute_query("MATCH (object) OPTIONAL MATCH (object)-[relation]-() DELETE object, relation")
   end
 
-  def query
-    puts ""
+  def query collection, repository, &blk
+    # Neo4j::Cypher.query &blk
+    q = Query.new(collection, repository, self).tap do |q|
+      q.instance_eval(&blk) if block_given?
+    end
+  end
+
+  def execute_query query
+    query = query.to_cypher if query.respond_to? :to_cypher
+    res = @neo.execute_query(query)
+    parse_results(res)
+  end
+
+  def create_relationship(role, node1, node2)
+    @neo.create_relationship(role, node1.id, node2.id)
+  end
+
+  def set_relationship_properties(rel, attrs)
+    @neo.set_relationship_properties(rel, attrs)
   end
 
   private
@@ -120,12 +262,18 @@ class Neo4JAdapter
           # (value[:_node_] ||= {})[:labels] = labels
           value[:_node_][:labels] = labels
         end
+        if hsh.has_key? "#{key}_type"
+          type = hsh.delete("#{key}_type")
+          # (value[:_node_] ||= {})[:type] = type
+          value[:_node_][:type] = type
+        end
         hsh[key] = hash_2_object(value)
       end
     end #.inject({}){|hash, tuple| hash[tuple[0].to_sym] = tuple[1]; hash}
 
     if hsh.length > 1
-      Struct.new(*hsh.keys.map{|k| k.to_sym}).new(*hsh.values)
+      keys = hsh.keys.map{|k| k.to_sym}
+      Struct.new(*keys).new(*hsh.values)
     else
       hsh.values.first
     end
@@ -138,8 +286,7 @@ class Neo4JAdapter
       else
         field
       end
-    end
-    
+    end    
     [columns, result].transpose.to_h
   end
 

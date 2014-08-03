@@ -5,9 +5,8 @@ class Thing
   include Lotus::Entity
   # include ::AutoNotify
   self.attributes = :additional_type, :alternate_name, :description, :image, 
-                    :name, :potential_action, :same_as, :url,
-                    :created_at, :updated_at, :slug
-
+                    :name, :potential_action, :same_as, :url, :slug
+                    # :created_at, :updated_at,
   # linked with: Person, as: :created_by
   # linked with: Person, as: :updated_by
 

@@ -31,19 +31,32 @@ end
 
 
 thing = Thing.new(
+  name: "Things",
+  alternate_name: "thingsapp",
+  description: "ruby app",
+  image: nil,
+  url: "https://thingsapp.com/",
+  same_as: "https://twitter.com/things",
+  slug: "things",
+)
+
+user = Person.new(
   name: "Manuel",
   alternate_name: "Manu",
   description: "ruby developer",
   image: "https://avatars2.githubusercontent.com/u/856974",
   url: "https://github.com/weapp",
   same_as: "https://twitter.com/weapp",
-  created_at: Time.now,
-  updated_at: Time.now,
   slug: "manu",
 )
-# thing.created_at = thing
-# thing.updated_by = thing
 
+puts "delete:"
+loop do
+  last = ThingRepository.last
+  break if last.id < 400
+  pp ThingRepository.delete(last)
+end
+puts
 
 puts "all:"
 pp ThingRepository.all[0..4]
@@ -54,7 +67,8 @@ pp ThingRepository.first
 puts
 
 puts "create:"
-pp ThingRepository.create thing
+pp ThingRepository.create user
+pp ThingRepository.create_with_creator thing, user
 puts
 
 puts "last:"
@@ -65,10 +79,15 @@ puts "find:"
 pp l = ThingRepository.find(ThingRepository.last.id)
 puts
 
+puts "find_by_name:"
+pp ThingRepository.find_by_name("Manuel")
+puts
+
 puts "delete:"
 last = ThingRepository.last
 pp ThingRepository.delete(last)
 puts
+
 
 last = ThingRepository.last
 pp last
