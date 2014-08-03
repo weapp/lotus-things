@@ -22,6 +22,25 @@ class ThingRepository
     q.execute
   end
 
+  def self.director_movie
+    query
+      .match("(director)-[:DIRECTED]->(movie)")
+      .return_node("movie")
+      .return_node("director")
+      .limit(2)
+      .execute
+  end
+
+
+  def self.worlds
+    query
+      .match("(object)")
+      .where("object.name = \"World\"")
+      .return_node("object")
+      .limit(100)
+      .execute
+  end
+
 
   def self.assign_creator thing, user, time = Time.now
     # rel = @adapter.create_relationship("created_by", thing, user)

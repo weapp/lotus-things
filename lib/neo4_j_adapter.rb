@@ -1,8 +1,7 @@
-require 'ostruct'
-
 require 'neography'
 
 require_relative 'query'
+require_relative 'result'
 
 Neography.configure do |config|
   config.protocol             = "http://"
@@ -51,14 +50,19 @@ class Neo4JAdapter
   def delete collection, entity
     @neo.delete_node!(entity.id)
     # @neo.execute_query("MATCH (object) WHERE id(object) = #{entity.id} DELETE object")
+
+    # query
+    #   .start("object=node(?)", entity.id)
+    #   # .match("(object)")
+    #   # .where("id(object) = ?", entity.id)
+    #   .optional_match("(object)-[relation]-()")
+    #   .delete(:object)
+    #   .delete(:relation)
+    #   .execute
   end
 
   def all collection
-    # res = @neo.execute_query("MATCH (director)-[:`DIRECTED`]->(movie) RETURN labels(movie) as movie_labels, movie, labels(director) as director_labels, director LIMIT 2")
-    # res = @neo.execute_query("MATCH object RETURN id(object) as id, labels(object)[0] as label, object LIMIT 2")
-    # res = @neo.execute_query('MATCH (object) WHERE object.name = "World" RETURN id(object) as object_id, labels(object) as object_labels, object LIMIT 100')
-    res = @neo.execute_query('MATCH (object) RETURN id(object) as object_id, labels(object) as object_labels, object')
-    parse_results res
+    query.match("(object)").return_node("object").execute
   end
 
   def find collection, id
@@ -71,27 +75,46 @@ class Neo4JAdapter
     # Neography::Node.load(id, @neo)
 
     # res = @neo.execute_query("MATCH (object) WHERE id(object) = #{id} RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1")
-    res = @neo.execute_query("START object=node(#{id}) RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1")
-    parse_results(res).first
+    query
+      .start("object=node(?)", id)
+      .return_node("object")
+      .order_by("id(object) DESC")
+      .limit(1)
+      .execute
+      .first
   end
 
   def first collection
-    res = @neo.execute_query('MATCH (object) RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) ASC LIMIT 1')
-    parse_results res
+    query
+      .match("(object)")
+      .return_node("object")
+      .order_by("id(object) ASC")
+      .limit(1)
+      .execute
+      .first
   end
 
   def last collection
-    res = @neo.execute_query('MATCH (object) RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1')
-    parse_results(res).last
+    query
+      .match("(object)")
+      .return_node("object")
+      .order_by("id(object) DESC")
+      .limit(1)
+      .execute
+      .last
   end
 
   def clear
-    @neo.execute_query("MATCH (object) OPTIONAL MATCH (object)-[relation]-() DELETE object, relation")
+    query
+      .match("(object)")
+      .optional_match("(object)-[relation]-()")
+      .delete(:object)
+      .delete(:relation)
+      .execute
   end
 
-  def query collection, repository, &blk
-    # Neo4j::Cypher.query &blk
-    q = Query.new(self).tap do |q|
+  def query collection=nil, repository=nil, &blk
+    q = Query.new(method(:execute_query)).tap do |q|
       q.instance_eval(&blk) if block_given?
     end
   end
@@ -99,7 +122,7 @@ class Neo4JAdapter
   def execute_query query
     query = query.to_cypher if query.respond_to? :to_cypher
     res = @neo.execute_query(query)
-    parse_results(res)
+    Result::parse_results(res)
   end
 
   def create_relationship(role, node1, node2)
@@ -108,79 +131,5 @@ class Neo4JAdapter
 
   def set_relationship_properties(rel, attrs)
     @neo.set_relationship_properties(rel, attrs)
-  end
-
-  private
-
-  def parse_results res
-    columns = res["columns"]#.map{|s| s.to_sym}
-    
-    res["data"].map do |result|
-      parse_result result, columns
-    end
-  end
-
-  def parse_result result, columns
-    h = columns_to_hash result, columns
-    group_hashs(h)
-  end
-
-  def group_hashs hsh
-    hsh.each do |key, value|
-      if value.is_a? Hash
-        value[:_node_] ||= {}
-        if hsh.has_key? "#{key}_id"
-          id = hsh.delete("#{key}_id")
-          # value[:_node_][:id] = id
-          value[:id] = id
-        end
-        if hsh.has_key? "#{key}_labels"
-          labels = hsh.delete("#{key}_labels")
-          # (value[:_node_] ||= {})[:labels] = labels
-          value[:_node_][:labels] = labels
-        end
-        if hsh.has_key? "#{key}_type"
-          type = hsh.delete("#{key}_type")
-          # (value[:_node_] ||= {})[:type] = type
-          value[:_node_][:type] = type
-        end
-        hsh[key] = hash_2_object(value)
-      end
-    end #.inject({}){|hash, tuple| hash[tuple[0].to_sym] = tuple[1]; hash}
-
-    if hsh.length > 1
-      keys = hsh.keys.map{|k| k.to_sym}
-      Struct.new(*keys).new(*hsh.values)
-    else
-      hsh.values.first
-    end
-  end
-
-  def columns_to_hash result, columns
-    result = result.map do |field| 
-      if field.is_a?(Hash)
-        parse_field_hash(field)
-      else
-        field
-      end
-    end    
-    [columns, result].transpose.to_h
-  end
-
-  def parse_field_hash(field)
-    id = field.fetch("self"){""}.split("/", -2).last;
-    data = field["data"]
-    # data = field["data"].merge(_node_: {id: id.to_i}) if id
-    data = field["data"].merge(id: id.to_i) if id
-    data
-  end
-
-  def hash_2_object(value)
-    value[:_node_] ||= {}
-    value[:_node_][:labels] ||= []
-    classes = value[:_node_][:labels]
-    klass = classes.map{|klass| Object.const_defined?(klass) ? Object.const_get(klass) : nil}.compact.first || OpenStruct
-    attributes = value.map{|k,v| [k.to_sym, v]}.to_h
-    klass.new(attributes)
   end
 end

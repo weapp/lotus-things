@@ -58,6 +58,16 @@ loop do
 end
 puts
 
+puts "after_400:"
+pp ThingRepository.after_400
+puts
+
+puts "director_movie:"
+pp ThingRepository.director_movie
+puts
+
+exit
+
 puts "all:"
 pp ThingRepository.all[0..4]
 puts

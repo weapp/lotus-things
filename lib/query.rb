@@ -1,9 +1,9 @@
 require_relative "statement"
 
 class Query
-  attr_accessor :adapter, :statements, :statement_builder
-  def initialize(adapter=nil, statement_builder=Statement)
-    self.adapter = adapter
+  attr_accessor :runner, :statements, :statement_builder
+  def initialize(runner=nil, statement_builder=Statement)
+    self.runner = runner
     self.statement_builder = statement_builder
     self.statements = Hash.new{|h,k| h[k] = self.statement_builder.new(k) }
   end
@@ -33,6 +33,10 @@ class Query
     statement :WHERE, *args
   end
 
+  def delete *args
+    statement :DELETE, *args
+  end
+
   def return *args
     statement :RETURN, *args
   end
@@ -60,7 +64,7 @@ class Query
   end
 
   def execute
-    adapter.execute_query(self)
+    runner.call(self)
   end
 
   def to_cypher

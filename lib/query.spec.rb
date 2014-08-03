@@ -9,13 +9,23 @@ describe Query do
 
   describe ".new" do
     it "adapter is set" do
-      adapter = OpenStruct.new
-      q = Query.new(adapter)
-      assert_equal adapter, q.adapter
+      runner = OpenStruct.new
+      q = Query.new(runner)
+      assert_equal runner, q.runner
     end
 
     it "adapter is optional" do
       q = Query.new()
+    end
+  end
+
+  describe "#execute" do
+    it "must call @runner" do
+      runner = MiniTest::Mock.new
+      q = Query.new(runner)
+      runner.expect(:call, q, [q])
+      q.execute
+      assert(runner.verify)
     end
   end
 
@@ -35,7 +45,7 @@ describe Query do
     end
   end
 
-  common_clauses = %w{match optional_match where return order_by limit}
+  common_clauses = %w{match optional_match where return order_by limit delete}
 
   common_clauses.each do |clause|
     describe "##{clause}" do
@@ -129,6 +139,63 @@ describe Query do
 
       assert_equal result.join(" "), q.to_cypher
     end
-  end
 
+    it "example first" do
+      q = Query.new
+        .match("(object)")
+        .return_node("object")
+        .order_by("id(object) ASC")
+        .limit(1)
+
+      result = 'MATCH (object) RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) ASC LIMIT 1'
+
+      assert_equal result, q.to_cypher
+    end
+
+    it "example last" do
+      q = Query.new
+        .match("(object)")
+        .return_node("object")
+        .order_by("id(object) DESC")
+        .limit(1)
+
+      result = 'MATCH (object) RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1'
+
+      assert_equal result, q.to_cypher
+    end
+
+    it "example find" do
+      q = Query.new
+        .start("object=node(?)", 99)
+        .return_node("object")
+        .order_by("id(object) DESC")
+        .limit(1)
+
+      result = 'START object=node(99) RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1'
+
+      assert_equal result, q.to_cypher
+    end
+
+    it "example all" do
+      q = Query.new
+        .match("(object)")
+        .return_node("object")
+
+      result = 'MATCH (object) RETURN id(object) as object_id, labels(object) as object_labels, object'
+
+      assert_equal result, q.to_cypher
+    end
+
+    it "example clear" do
+      q = Query.new
+        .match("(object)")
+        .optional_match("(object)-[relation]-()")
+        .delete(:object)
+        .delete(:relation)
+
+      result = 'MATCH (object) OPTIONAL MATCH (object)-[relation]-() DELETE object, relation'
+
+      assert_equal result, q.to_cypher
+    end
+  end
 end
