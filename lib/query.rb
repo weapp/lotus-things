@@ -14,6 +14,10 @@ class Query
     self
   end
 
+  def start *args
+    statement :START, *args
+  end
+
   def match *args
     statement :MATCH, *args
   end

@@ -88,4 +88,19 @@ describe Query do
     end
   end
 
+  describe "#to_cypher" do
+    it "returned sorted statements" do
+      q = Query.new
+        .limit("")
+        .match("")
+        .order_by("")
+        .optional_match("")
+        .return("")
+        .start("")
+        .where("")
+
+      assert_equal "START  MATCH  OPTIONAL MATCH  WHERE  RETURN  ORDER BY  LIMIT ", q.to_cypher
+    end
+  end
+
 end
