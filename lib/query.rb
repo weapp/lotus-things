@@ -4,14 +4,17 @@ class Query
   attr_accessor :adapter, :statements, :statement_builder
   def initialize(adapter=nil, statement_builder=Statement)
     self.adapter = adapter
-    self.statements = Hash.new()
     self.statement_builder = statement_builder
+    self.statements = Hash.new{|h,k| h[k] = self.statement_builder.new(k) }
   end
 
   def statement clause, predicate, *opts
-    self.statements[clause] ||= statement_builder.new(clause)
-    self.statements[clause].add(predicate, *opts)
+    statement! clause, predicate, *opts
     self
+  end
+
+  def statement! clause, predicate, *opts
+    self.statements[clause].add(predicate, *opts)
   end
 
   def start *args

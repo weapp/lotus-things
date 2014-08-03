@@ -23,6 +23,11 @@ describe Predicate do
       assert_equal "0", p.generate
     end
 
+    it "symbol predicate is generated" do
+      p = Predicate.new(:sym)
+      assert_equal "sym", p.generate
+    end
+
     it "string predicate with number is generated" do
       p = Predicate.new("predicate ?")
       assert_equal "predicate 0", p.generate(0)

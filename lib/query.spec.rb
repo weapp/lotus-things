@@ -101,6 +101,32 @@ describe Query do
 
       assert_equal "START  MATCH  OPTIONAL MATCH  WHERE  RETURN  ORDER BY  LIMIT ", q.to_cypher
     end
+
+    it "example query must work" do
+      q = Query.new
+        .limit(10)
+        .match("(object ?)", {key: "value"})
+        .order_by(:id)
+        .optional_match("(object)->[r]->()")
+        .return("id(object) as id")
+        .return("object")
+        .return("r")
+        .start("object = node(?)", 1)
+        .where("object.field = ?", "value")
+        .where("object.field2 = ?", "value2")
+
+      result = [
+        "START object = node(1)",
+        "MATCH (object {key : 'value'})",
+        "OPTIONAL MATCH (object)->[r]->()",
+        "WHERE object.field = 'value' and object.field2 = 'value2'",
+        "RETURN id(object) as id, object, r",
+        "ORDER BY id",
+        "LIMIT 10"
+      ]
+
+      assert_equal result.join(" "), q.to_cypher
+    end
   end
 
 end

@@ -21,6 +21,9 @@ class Predicate
     predicate.to_s
   end
 
+  def generate_from_symbol
+    predicate.to_s
+  end
 
   # parses of arguments
 
