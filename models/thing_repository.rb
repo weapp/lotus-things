@@ -7,7 +7,7 @@ class ThingRepository
   self.collection = "things"
 
   def self.find_by_name name
-    find_match({name: name}).execute.first
+    search_match({name: name}).first
   end
 
   def self.after_400
@@ -79,10 +79,6 @@ class ThingRepository
     query
       .match("(? ?)", :object, obj)
       .return_node(:object)
-  end
-
-  def self.find_match(obj)
-    search_match(obj).limit(1)
   end
 
 end
