@@ -112,6 +112,7 @@ describe Query do
         .return("object")
         .return("r")
         .start("object = node(?)", 1)
+        .where(or: [["object.field = ?", "value"], ["wadus = ?", "fadus"]])
         .where("object.field = ?", "value")
         .where("object.field2 = ?", "value2")
 
@@ -119,7 +120,8 @@ describe Query do
         "START object = node(1)",
         "MATCH (object {key : 'value'})",
         "OPTIONAL MATCH (object)->[r]->()",
-        "WHERE object.field = 'value' and object.field2 = 'value2'",
+        "WHERE ((object.field = 'value') OR (wadus = 'fadus'))",
+               "and object.field = 'value' and object.field2 = 'value2'",
         "RETURN id(object) as id, object, r",
         "ORDER BY id",
         "LIMIT 10"

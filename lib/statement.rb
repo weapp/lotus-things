@@ -9,7 +9,7 @@ class Statement
   end
 
   def add(predicate, *opts)
-    @predicates << Predicate.new(predicate).generate(*opts)
+    @predicates << Predicate.build(predicate, *opts)
   end
 
   def join

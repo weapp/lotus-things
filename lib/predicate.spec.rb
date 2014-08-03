@@ -12,6 +12,12 @@ describe Predicate do
     end
   end
 
+  describe ".build" do
+    it "must create and generate a predicate" do
+      assert_equal "predicate <'args'>", Predicate.build("predicate <?>", "args")
+    end
+  end
+
   describe "#generate" do
     it "string simple predicate is generated" do
       p = Predicate.new("predicate")
@@ -26,6 +32,16 @@ describe Predicate do
     it "symbol predicate is generated" do
       p = Predicate.new(:sym)
       assert_equal "sym", p.generate
+    end
+
+    it "hash predicate is generated" do
+      p = Predicate.new(or: [["p1 ?", "args"], ["p2 <?> <?>", "arg1", "arg2"]])
+      assert_equal "((p1 'args') OR (p2 <'arg1'> <'arg2'>))", p.generate
+    end
+
+    it "hash predicate is generated" do
+      p = Predicate.new(or: ["p1", "p2"])
+      assert_equal "((p1) OR (p2))", p.generate
     end
 
     it "string predicate with number is generated" do

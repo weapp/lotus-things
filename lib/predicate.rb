@@ -9,6 +9,10 @@ class Predicate
     send("generate_from_#{predicate.class.to_s.downcase}", *opts)
   end
 
+  def self.build predicate, *opts
+    self.new(predicate).generate(*opts)
+  end
+
   private
   
   # parses of predicates
@@ -23,6 +27,15 @@ class Predicate
 
   def generate_from_symbol
     predicate.to_s
+  end
+
+  def generate_from_hash
+    predicates = predicate.fetch(:or){predicate.fech("or")}
+    predicates = predicates.map do |args|
+      built = self.class.build(*args)
+      "(#{built})"
+    end
+    "(#{predicates.join(' OR ')})"
   end
 
   # parses of arguments
