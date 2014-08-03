@@ -18,3 +18,6 @@ gem 'display_case'
 
 
 gem 'neography'
+
+gem 'minitest'
+gem 'minitest-rg'

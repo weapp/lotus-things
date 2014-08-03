@@ -50,8 +50,8 @@ class ThingRepository
 
   def self.search_match(obj)
     query
-      .match("(object ?)", obj)
-      .return("id(object) as object_id, labels(object) as object_labels, object")
+      .match("(? ?)", :object, obj)
+      .return_node(:object)
   end
 
   def self.find_match(obj)
