@@ -47,7 +47,8 @@ class Neo4JAdapter
   end
 
   def delete collection, entity
-    @neo.execute_query("MATCH (object) WHERE id(object) = #{entity.id} DELETE object")
+    @neo.delete_node!(entity.id)
+    # @neo.execute_query("MATCH (object) WHERE id(object) = #{entity.id} DELETE object")
   end
 
   def all collection

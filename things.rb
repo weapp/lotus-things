@@ -70,17 +70,10 @@ last = ThingRepository.last
 pp ThingRepository.delete(last)
 puts
 
-exit()
-
 last = ThingRepository.last
 pp last
 
 # pp ThingRepository.persist(thing)
-
-
-
-last = ThingRepository.last
-# ThingRepository.delete(last)
 
 exit
 
