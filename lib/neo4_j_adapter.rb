@@ -40,7 +40,7 @@ class Neo4JAdapter
     # value[:_node_][:id] ||= id.to_i
     # value[:_node_][:labels] ||= [entity.class.to_s]
     # r = hash_2_object value
-    entity.id = id
+    entity.id = id.to_i
   end
 
   def update collection, entity
@@ -79,8 +79,6 @@ class Neo4JAdapter
       .start("object=node(?)", id)
       .return_node("object")
       .order_by("id(object) DESC")
-      .limit(1)
-      .execute
       .first
   end
 
@@ -89,8 +87,6 @@ class Neo4JAdapter
       .match("(object)")
       .return_node("object")
       .order_by("id(object) ASC")
-      .limit(1)
-      .execute
       .first
   end
 
@@ -99,12 +95,10 @@ class Neo4JAdapter
       .match("(object)")
       .return_node("object")
       .order_by("id(object) DESC")
-      .limit(1)
-      .execute
       .last
   end
 
-  def clear
+  def clear collection
     query
       .match("(object)")
       .optional_match("(object)-[relation]-()")

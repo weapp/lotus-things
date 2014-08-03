@@ -1,7 +1,12 @@
 require_relative "statement"
+require_relative "query_out_boxing"
 
 class Query
+
+  include QueryOutBoxing
+  
   attr_accessor :runner, :statements, :statement_builder
+
   def initialize(runner=nil, statement_builder=Statement)
     self.runner = runner
     self.statement_builder = statement_builder

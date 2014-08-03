@@ -35,7 +35,7 @@ class ThingRepository
   def self.worlds
     query
       .match("(object)")
-      .where("object.name = \"World\"")
+      .where("object.name = ?", "World")
       .return_node("object")
       .limit(100)
       .execute
@@ -46,7 +46,7 @@ class ThingRepository
     # rel = @adapter.create_relationship("created_by", thing, user)
     # @adapter.set_relationship_properties(rel, {"at" => time})
 
-    rel = @adapter.create_relationship("created", user, thing)
+    rel = @adapter.create_relationship("CREATED", user, thing)
     @adapter.set_relationship_properties(rel, {"at" => time})
 
     assign_updater thing, user, time
@@ -56,13 +56,21 @@ class ThingRepository
     # rel = @adapter.create_relationship("updated_by", thing, user)
     # @adapter.set_relationship_properties(rel, {"at" => time})
 
-    rel = @adapter.create_relationship("updated", user, thing)
+    rel = @adapter.create_relationship("UPDATED", user, thing)
     @adapter.set_relationship_properties(rel, {"at" => time})
   end
 
   def self.create_with_creator thing, user
     create thing
     assign_creator thing, user
+  end
+
+  def self.created_by thing
+    query
+      .start("object=node(?)", thing.id.to_i)
+      .match("(object)<-[CREATED]-(user)")
+      .return_node("user")
+      .first
   end
 
   private

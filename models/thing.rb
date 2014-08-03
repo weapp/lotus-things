@@ -23,4 +23,7 @@ class Thing
     attrs.inject({}){|hsh, attr| hsh[attr] = send(attr) ; hsh }
   end
 
+  def == other
+    self.id == other.id if self.id
+  end
 end

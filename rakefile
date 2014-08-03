@@ -1,4 +1,4 @@
 task :default => :test
 task :test do
-  Dir.glob('./lib/*.spec.rb').each { |file| require file}
+  Dir.glob('./*/*.spec.rb').each { |file| require file}
 end

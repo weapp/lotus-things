@@ -50,61 +50,18 @@ user = Person.new(
   slug: "manu",
 )
 
-puts "delete:"
-loop do
-  last = ThingRepository.last
-  break if last.id < 400
-  pp ThingRepository.delete(last)
-end
-puts
+# puts "delete:"
+# loop do
+#   last = ThingRepository.last
+#   break if last.id < 400
+#   pp ThingRepository.delete(last)
+# end
+# puts
 
-puts "after_400:"
-pp ThingRepository.after_400
-puts
+# puts "director_movie:"
+# pp ThingRepository.director_movie
+# puts
 
-puts "director_movie:"
-pp ThingRepository.director_movie
-puts
-
-exit
-
-puts "all:"
-pp ThingRepository.all[0..4]
-puts
-
-puts "first:"
-pp ThingRepository.first
-puts
-
-puts "create:"
-pp ThingRepository.create user
-pp ThingRepository.create_with_creator thing, user
-puts
-
-puts "last:"
-pp ThingRepository.last
-puts
-
-puts "find:"
-pp l = ThingRepository.find(ThingRepository.last.id)
-puts
-
-puts "find_by_name:"
-pp ThingRepository.find_by_name("Manuel")
-puts
-
-puts "delete:"
-last = ThingRepository.last
-pp ThingRepository.delete(last)
-puts
-
-
-last = ThingRepository.last
-pp last
-
-# pp ThingRepository.persist(thing)
-
-exit
 
 
 thing = Thing.new
