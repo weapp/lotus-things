@@ -1,11 +1,4 @@
-require 'ostruct'
-require 'minitest/autorun'
-
-require 'minitest/rg'
-
-require_relative 'thing_repository'
-require_relative 'thing'
-require_relative 'person'
+require 'spec_helper'
 
 describe ThingRepository do
   before do
@@ -41,7 +34,7 @@ describe ThingRepository do
     it "after must be empty" do
       ThingRepository.create(@thing)
       ThingRepository.clear
-      assert_equal [], ThingRepository.all
+      expect(ThingRepository.all).to be == []
     end
   end
 
@@ -49,7 +42,7 @@ describe ThingRepository do
     it "after must be empty" do
       ThingRepository.create(@thing)
       ThingRepository.delete(@thing)
-      assert_equal [], ThingRepository.all
+      expect(ThingRepository.all).to be == []
     end
   end
 
@@ -57,7 +50,7 @@ describe ThingRepository do
     it "must return all" do
       ThingRepository.create(@thing)
       ThingRepository.create(@user)
-      assert_equal [@thing, @user], ThingRepository.all
+      expect(ThingRepository.all).to be == [@thing, @user]
     end
   end
 
@@ -65,7 +58,7 @@ describe ThingRepository do
     it "must return first" do
       ThingRepository.create(@thing)
       ThingRepository.create(@user)
-      assert_equal @thing, ThingRepository.first
+      expect(ThingRepository.first).to be == @thing
     end
   end
 
@@ -73,19 +66,19 @@ describe ThingRepository do
     it "must return last" do
       ThingRepository.create(@thing)
       ThingRepository.create(@user)
-      assert_equal @user, ThingRepository.last
+      expect(ThingRepository.last).to be == @user
     end
   end
 
   describe ".create" do
     it "return same object" do
       ret = ThingRepository.create(@thing)
-      assert_equal @thing, ret
+      expect(ret).to be == @thing
     end
 
     it "return object with id" do
       ret = ThingRepository.create(@thing)
-      refute_nil @thing.id
+      expect(@thing.id).to be_truthy
     end
   end
 
@@ -93,7 +86,7 @@ describe ThingRepository do
     it "return same object" do
       ThingRepository.create(@thing)
       ret = ThingRepository.find(@thing.id)
-      assert_equal @thing, ret
+      expect(ret).to be == @thing
     end
   end
 
@@ -101,7 +94,7 @@ describe ThingRepository do
     it "return same object" do
       ThingRepository.create(@thing)
       ret = ThingRepository.find_by_name("Things")
-      assert_equal @thing, ret
+      expect(ret).to be == @thing
     end
   end
 
@@ -113,7 +106,7 @@ describe ThingRepository do
       thing = OpenStruct.new(serializable_hash: {name: "World"})
       ThingRepository.create(thing)
       ret = ThingRepository.worlds
-      assert_equal thing.id, ret.first.id
+      expect(ret.first.id).to be == thing.id
     end
   end
 
@@ -128,7 +121,7 @@ describe ThingRepository do
       ThingRepository.create(@user)
       ThingRepository.create_with_creator(@thing, @user)
       user = ThingRepository.created_by @thing
-      assert_equal @user, user
+      expect(user).to be == @user
     end
   end
 end
