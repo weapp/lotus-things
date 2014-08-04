@@ -53,6 +53,12 @@ GIT
       lotus-utils (~> 0.2)
       tilt (~> 2.0, >= 2.0.1)
 
+GIT
+  remote: git://github.com/weapp/cypherites.git
+  revision: 229803cfc153c701b901d07224d3e44154b12951
+  specs:
+    cypherites (0.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -100,6 +106,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport (~> 4.1.4)
   cancancan (~> 1.8)
+  cypherites!
   display_case
   lotus-controller!
   lotus-helpers!

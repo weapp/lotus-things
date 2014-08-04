@@ -8,6 +8,7 @@ gem 'lotus-model',      github: 'lotus/model'
 gem 'lotus-controller', github: 'lotus/controller'
 gem 'lotus-view',       github: 'lotus/view'
 gem 'lotus-router',     github: 'lotus/router'
+gem 'cypherites',       github: 'weapp/cypherites'
 
 
 gem 'activesupport', '~> 4.1.4'

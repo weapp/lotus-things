@@ -1,6 +1,6 @@
 require 'neography'
+require 'cypherites'
 
-require_relative 'query'
 require_relative 'result'
 
 Neography.configure do |config|
@@ -108,7 +108,7 @@ class Neo4JAdapter
   end
 
   def query collection=nil, repository=nil, &blk
-    q = Query.new(method(:execute_query)).tap do |q|
+    q = Cypherites::Query.new(method(:execute_query)).tap do |q|
       q.instance_eval(&blk) if block_given?
     end
   end
