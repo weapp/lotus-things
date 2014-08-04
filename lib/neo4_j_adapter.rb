@@ -41,6 +41,7 @@ class Neo4JAdapter
     # value[:_node_][:labels] ||= [entity.class.to_s]
     # r = hash_2_object value
     entity.id = id.to_i
+    entity
   end
 
   def update collection, entity
