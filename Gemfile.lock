@@ -55,7 +55,7 @@ GIT
 
 GIT
   remote: git://github.com/weapp/cypherites.git
-  revision: 3c3de9a8f3ce98b9651c37b4a755d968207b210b
+  revision: 793da2f7a445b92a6ebaeabf07bb2e09d75895d9
   specs:
     cypherites (0.0.1)
 
@@ -80,6 +80,9 @@ GEM
     excon (0.39.4)
     ffi (1.9.3)
     formatador (0.2.5)
+    fuubar (2.0.0)
+      rspec (~> 3.0)
+      ruby-progressbar (~> 1.4)
     guard (2.6.1)
       formatador (>= 0.2.4)
       listen (~> 2.7)
@@ -134,6 +137,7 @@ GEM
     rspec-mocks (3.0.3)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.3)
+    ruby-progressbar (1.5.1)
     rubyzip (1.1.6)
     sequel (4.13.0)
     slop (3.6.0)
@@ -155,6 +159,7 @@ DEPENDENCIES
   cancancan (~> 1.8)
   cypherites!
   display_case
+  fuubar
   guard-bundler-audit
   guard-rspec
   lotus-controller!

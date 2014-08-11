@@ -4,7 +4,7 @@ describe Neo4JAdapter do
 
   before do
     @neo_adapter = Neo4JAdapter.new
-    @collection = nil
+    @collection = "Test"
     @repository = nil
     @neo_adapter.clear @collection    
   end
@@ -13,8 +13,9 @@ describe Neo4JAdapter do
     neo_adapter.clear @collection
   end
 
-  # null for params
   let(:collection){@collection}
+
+  # null for params
   let(:repository){@repository}
   
   let(:neo_adapter){@neo_adapter}
@@ -23,8 +24,26 @@ describe Neo4JAdapter do
   let(:user){build_person}
 
   describe "#persist" do
-    it "must create if object not exist"
-    it "must update if object exist"
+    it "must create if object not exist" do
+      ret = neo_adapter.persist(collection, thing)
+      expect(ret).to be thing
+      expect(thing.id).to be_truthy
+    end
+
+    it "must update if object exist" do
+      thing = build_thing("name1")
+      
+      neo_adapter.create(collection, thing)
+      expect(thing.name).to eq "name1"
+      
+      thing.name = "name2"
+      expect(thing.name).to eq "name2"
+      
+      neo_adapter.persist(collection, thing)
+
+      res = neo_adapter.find(collection, thing.id)
+      expect(res.name).to eq "name2"
+    end
   end
 
   describe "#create" do
@@ -40,7 +59,20 @@ describe Neo4JAdapter do
   end
 
   describe "#update" do
-    it "must save object"
+    it "must save object" do
+      thing = build_thing("name1")
+      
+      neo_adapter.create(collection, thing)
+      expect(thing.name).to eq "name1"
+      
+      thing.name = "name2"
+      expect(thing.name).to eq "name2"
+      
+      neo_adapter.update(collection, thing)
+
+      res = neo_adapter.find(collection, thing.id)
+      expect(res.name).to eq "name2"
+    end
   end
 
   describe "#delete" do
@@ -60,7 +92,10 @@ describe Neo4JAdapter do
   end
 
   describe "#find" do
-    it "return a equal object"
+    it "return a equal object" do
+      neo_adapter.create(collection, thing)
+      expect(neo_adapter.find(collection, thing.id).id).to eq thing.id
+    end
   end
 
   describe "#first" do

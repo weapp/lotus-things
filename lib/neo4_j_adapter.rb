@@ -28,24 +28,50 @@ class Neo4JAdapter
   end
 
   def persist collection, entity
-    puts "#{collection} : #{entity}"
+    labels = get_labels(collection, entity)
+    
+    hsh = entity.serializable_hash
+    hsh.each {|k, v| hsh.delete(k) if v.nil? }
+
+    res = query
+            .merge("(n#{labels} ?)", hsh)
+            .return("n, id(n) as id")
+            .execute
+
+    entity.id = res.first.id
+    entity
   end
 
   def create collection, entity
-    node = @neo.create_node(entity.serializable_hash)
-    id = node["self"].split("/", -1).last
-    @neo.add_label(id, entity.class.to_s)
-    # value = parse_field_hash(node)
-    # value[:_node_] ||= {}
-    # value[:_node_][:id] ||= id.to_i
-    # value[:_node_][:labels] ||= [entity.class.to_s]
-    # r = hash_2_object value
-    entity.id = id.to_i
+    labels = get_labels(collection, entity)
+
+    res = query
+            .create("(n#{labels} ?)", entity.serializable_hash)
+            .return("n, id(n) as id")
+            .execute
+
+    # res = query
+    #   .create("(n#{labels} {props})")
+    #   .return("n, id(n) as id")
+    #   .execute({props: entity.serializable_hash})
+
+    entity.id = res.first.id
     entity
   end
 
   def update collection, entity
-    puts "#{collection} : #{entity}"
+    labels = get_labels(collection, entity)
+
+    hsh = entity.serializable_hash
+    hsh.delete(:id)
+    hsh.delete("id")
+
+    res = query
+            .start("n=node(?)", entity.id)
+            .set("n = ?", hsh)
+            .execute
+    
+    entity
   end
 
   def delete collection, entity
@@ -63,7 +89,8 @@ class Neo4JAdapter
   end
 
   def all collection
-    query.match("(object)").return_node("object").execute
+    #.tap{|q| puts;pp q;puts}
+    query.match("(node#{c collection})").order_by("id(node) ASC").return_node("node").execute
   end
 
   def find collection, id
@@ -77,34 +104,32 @@ class Neo4JAdapter
 
     # res = @neo.execute_query("MATCH (object) WHERE id(object) = #{id} RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1")
     query
-      .start("object=node(?)", id)
-      .return_node("object")
-      .order_by("id(object) DESC")
+      .start("node=node(?)", id)
+      .return_node("node")
+      .order_by("id(node) DESC")
       .first
   end
 
   def first collection
     query
-      .match("(object)")
-      .return_node("object")
-      .order_by("id(object) ASC")
+      .match("(node#{c collection})")
+      .return_node("node")
+      .order_by("id(node) ASC")
       .first
   end
 
   def last collection
     query
-      .match("(object)")
-      .return_node("object")
-      .order_by("id(object) DESC")
+      .match("(node#{c collection})")
+      .return_node("node")
+      .order_by("id(node) DESC")
       .last
   end
 
   def clear collection
     query
-      .match("(object)")
-      .optional_match("(object)-[relation]-()")
-      .delete(:object)
-      .delete(:relation)
+      .match("(n#{c collection})").optional_match("(n)-[r]-()")
+      .delete(:n).delete(:r)
       .execute
   end
 
@@ -114,9 +139,16 @@ class Neo4JAdapter
     end
   end
 
-  def execute_query query
+  def execute_query query, *params
     query = query.to_cypher if query.respond_to? :to_cypher
-    res = @neo.execute_query(query)
+    # begin    
+      res = @neo.execute_query(query, *params)
+    # rescue Exception => e
+    #   puts
+    #   pp query
+    #   pp params
+    #   puts      
+    # end
     Result::parse_results(res)
   end
 
@@ -126,5 +158,23 @@ class Neo4JAdapter
 
   def set_relationship_properties(rel, attrs)
     @neo.set_relationship_properties(rel, attrs)
+  end
+
+  private
+
+  def get_labels collection, entity
+    labels = ":#{entity.class}"
+    labels_coll = c collection
+
+    labels << labels_coll if labels_coll != labels
+    labels
+  end
+
+  def c collection, opts={}
+    raise ArgumentError.new("collection is nil") unless collection
+    name = ""
+    name << ":" if !opts[:only_name]
+    name << collection.capitalize
+    name if collection
   end
 end
