@@ -28,32 +28,26 @@ class Neo4JAdapter
   end
 
   def persist collection, entity
-    labels = get_labels(collection, entity)
-    
-    hsh = entity.serializable_hash
-    hsh.each {|k, v| hsh.delete(k) if v.nil? }
-
-    res = query
-            .merge("(n#{labels} ?)", hsh)
-            .return("n, id(n) as id")
-            .execute
-
-    entity.id = res.first.id
-    entity
+    entity.id ? update(collection, entity) : create(collection, entity)
   end
 
   def create collection, entity
     labels = get_labels(collection, entity)
 
-    res = query
-            .create("(n#{labels} ?)", entity.serializable_hash)
-            .return("n, id(n) as id")
-            .execute
-
     # res = query
-    #   .create("(n#{labels} {props})")
-    #   .return("n, id(n) as id")
-    #   .execute({props: entity.serializable_hash})
+    #         .create("(n#{labels} ?)", entity.serializable_hash)
+    #         .return("n, id(n) as id")
+    #         .execute
+
+    hsh = entity.serializable_hash
+    hsh.delete(:id)
+    hsh.delete("id")
+    hsh.each {|k, v| hsh.delete(k) if v.nil? }
+
+    res = query
+      .create("(n#{labels} {props})")
+      .return("n, id(n) as id")
+      .execute({props: hsh})
 
     entity.id = res.first.id
     entity
@@ -139,10 +133,10 @@ class Neo4JAdapter
     end
   end
 
-  def execute_query query, *params
+  def execute_query query, params={}
     query = query.to_cypher if query.respond_to? :to_cypher
     # begin    
-      res = @neo.execute_query(query, *params)
+      res = @neo.execute_query(query, params)
     # rescue Exception => e
     #   puts
     #   pp query

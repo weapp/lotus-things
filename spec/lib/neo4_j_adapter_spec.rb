@@ -36,6 +36,8 @@ describe Neo4JAdapter do
       neo_adapter.create(collection, thing)
       expect(thing.name).to eq "name1"
       
+      original_thing_id = thing.id
+
       thing.name = "name2"
       expect(thing.name).to eq "name2"
       
@@ -43,6 +45,8 @@ describe Neo4JAdapter do
 
       res = neo_adapter.find(collection, thing.id)
       expect(res.name).to eq "name2"
+
+      expect(original_thing_id).to eq res.id
     end
   end
 
