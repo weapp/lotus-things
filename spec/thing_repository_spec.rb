@@ -7,7 +7,7 @@ describe ThingRepository do
   let(:user){build_person}
 
   before do
-    ThingRepository.clear    
+    ThingRepository.clear
   end
 
   after do

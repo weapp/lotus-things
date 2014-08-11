@@ -21,3 +21,8 @@ gem 'display_case'
 gem 'neography'
 
 gem 'rspec', '~> 3.0'
+gem "guard-rspec"
+# gem "fuubar"
+
+gem 'terminal-notifier-guard', require: false
+gem 'guard-bundler-audit', require: false

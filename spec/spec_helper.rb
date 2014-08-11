@@ -2,6 +2,11 @@ require './models/thing_repository'
 require './models/thing'
 require './models/person'
 
+RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
+end
 
 def build_thing(name="Things", alternate_name="thingsapp")
   Thing.new(
