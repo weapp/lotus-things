@@ -3,7 +3,7 @@ require './lib/neo4_j_adapter'
 
 class ThingRepository
   include Lotus::Repository
-  self.adapter = Neo4JAdapter.new
+  self.adapter = Neo4JAdapter.new(nil)
   self.collection = "things"
 
   def self.find_by_name name

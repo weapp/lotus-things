@@ -1,12 +1,23 @@
-require 'lotus/model'
+require 'active_attr'
+# require 'lotus/model'
 require_relative './by_user'
 
 class Thing
-  include Lotus::Entity
+  include ActiveAttr::Model
+  # include Lotus::Entity
   # include ::AutoNotify
-  self.attributes = :additional_type, :alternate_name, :description, :image, 
-                    :name, :potential_action, :same_as, :url, :slug
-                    # :created_at, :updated_at,
+  attribute :id
+  attribute :type
+  attribute :additional_type
+  attribute :alternate_name
+  attribute :description
+  attribute :image
+  attribute :name
+  attribute :potential_action
+  attribute :same_as
+  attribute :url
+  attribute :slug
+  # :created_at, :updated_at,
   # linked with: Person, as: :created_by
   # linked with: Person, as: :updated_by
 
@@ -18,12 +29,12 @@ class Thing
     notify :on_created
   end
 
-  def serializable_hash
-    attrs = self.class.attributes
-    attrs.inject({}){|hsh, attr| hsh[attr] = send(attr) ; hsh }
-  end
+  # def serializable_hash
+  #   attrs = self.class.attributes
+  #   attrs.inject({}){|hsh, attr| hsh[attr] = send(attr) ; hsh }
+  # end
 
   def == other
-    self.id == other.id if self.id
+    self.id == other.id if self.id && other.kind_of?(Thing)
   end
 end

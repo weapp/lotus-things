@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Neo4JAdapter do
 
   before do
-    @neo_adapter = Neo4JAdapter.new
+    @neo_adapter = Neo4JAdapter.new(nil)
     @collection = "Test"
     @repository = nil
     @neo_adapter.clear @collection    

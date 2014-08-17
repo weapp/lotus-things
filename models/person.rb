@@ -1,7 +1,7 @@
 require_relative './thing'
 
 class Person < Thing
-  self.attributes = Thing.attributes
+  # self.attributes = Thing.attributes
   #  + 
   #                  [:additional_name, :address, :affiliation, :alumni_of,
   #                   :award, :birth_date, :brand, :children, :colleague,

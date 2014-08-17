@@ -4,8 +4,9 @@ require 'headjack'
 require_relative 'result'
 
 class Neo4JAdapter
-  def initialize(rest_client = Headjack::Connection)
-    @neo = rest_client.new
+  def initialize(mapping, uri="http://localhost:7474", rest_client = Headjack::Connection)
+    @mapping = mapping
+    @neo = rest_client.new(url: uri)
   end
 
   def persist collection, entity
@@ -15,7 +16,7 @@ class Neo4JAdapter
   def create collection, entity
     labels = get_labels(collection, entity)
 
-    # res = query
+    # res = query(collection)
     #         .create("(n#{labels} ?)", entity.serializable_hash)
     #         .return("n, id(n) as id")
     #         .execute
@@ -25,7 +26,7 @@ class Neo4JAdapter
     hsh.delete("id")
     hsh.each {|k, v| hsh.delete(k) if v.nil? }
 
-    res = query
+    res = query(collection)
       .create("(n#{labels} {props})")
       .return("n, id(n) as id")
       .execute({props: hsh})
@@ -41,7 +42,7 @@ class Neo4JAdapter
     hsh.delete(:id)
     hsh.delete("id")
 
-    res = query
+    res = query(collection)
             .start("n=node(?)", entity.id)
             .set("n = ?", hsh)
             .execute
@@ -53,7 +54,7 @@ class Neo4JAdapter
     # @neo.delete_node!(entity.id)
     # @neo.execute_query("MATCH (object) WHERE id(object) = #{entity.id} DELETE object")
 
-    query
+    query(collection)
       .start("object=node(?)", entity.id)
       .optional_match("(object)-[relation]-()")
       .delete(:object)
@@ -63,7 +64,7 @@ class Neo4JAdapter
 
   def all collection
     #.tap{|q| puts;pp q;puts}
-    query.match("(node#{c collection})").order_by("id(node) ASC").return_node("node").execute
+    query(collection).match("(node#{c collection})").order_by("id(node) ASC").return_node("node").execute
   end
 
   def find collection, id
@@ -74,7 +75,7 @@ class Neo4JAdapter
     # hash_2_object value
 
     # res = @neo.execute_query("MATCH (object) WHERE id(object) = #{id} RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1")
-    query
+    query(collection)
       .start("node=node(?)", id)
       .return_node("node")
       .order_by("id(node) DESC")
@@ -82,7 +83,7 @@ class Neo4JAdapter
   end
 
   def first collection
-    query
+    query(collection)
       .match("(node#{c collection})")
       .return_node("node")
       .order_by("id(node) ASC")
@@ -90,7 +91,7 @@ class Neo4JAdapter
   end
 
   def last collection
-    query
+    query(collection)
       .match("(node#{c collection})")
       .return_node("node")
       .order_by("id(node) DESC")
@@ -98,7 +99,7 @@ class Neo4JAdapter
   end
 
   def clear collection
-    query
+    query(collection)
       .match("(n#{c collection})").optional_match("(n)-[r]-()")
       .delete(:n).delete(:r)
       .execute
@@ -109,6 +110,38 @@ class Neo4JAdapter
       q.instance_eval(&blk) if block_given?
     end
   end
+
+  # def query collection, repository=nil, &blk
+  #   q = Cypherites::Query.new(->(query, params={}){execute_query(collection, query, params)}).tap do |q|
+  #     def q.where(hsh)
+  #       hsh.each do |k, v|
+  #         super("node.#{k} = ?", v)
+  #       end
+  #       self
+  #     end
+  #     q
+  #       .match("(node#{c collection})")
+  #       .return_node("node")
+  #       .instance_eval(&blk) if block_given?
+  #   end
+  # end
+
+  # def execute_query collection, query, params={}
+  #   pp "<--"
+  #   pp collection
+  #   pp "-->"
+  #   query = query.to_cypher if query.respond_to? :to_cypher
+  #   # begin    
+  #     res = @neo.call(query, params)
+  #   # rescue Exception => e
+  #   #   puts
+  #   #   pp query
+  #   #   pp params
+  #   #   puts      
+  #   # end
+  #   # Result::parse_results(res)
+  #   res.map{|entity| @mapping.collections[collection].deserialize(entity)}
+  # end
 
   def execute_query query, params={}
     query = query.to_cypher if query.respond_to? :to_cypher
@@ -139,18 +172,20 @@ class Neo4JAdapter
   private
 
   def get_labels collection, entity
+    labels = ""#":#{entity.class}"
     labels = ":#{entity.class}"
     labels_coll = c collection
 
     labels << labels_coll if labels_coll != labels
     labels
+    
   end
 
   def c collection, opts={}
     raise ArgumentError.new("collection is nil") unless collection
     name = ""
     name << ":" if !opts[:only_name]
-    name << collection.capitalize
+    name << collection.to_s.capitalize
     name if collection
   end
 end

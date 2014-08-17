@@ -1,6 +1,9 @@
+require "active_attr/rspec"
+
 require './models/thing_repository'
 require './models/thing'
 require './models/person'
+require './models/recipe'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|
