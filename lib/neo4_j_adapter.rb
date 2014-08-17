@@ -112,14 +112,7 @@ class Neo4JAdapter
 
   def execute_query query, params={}
     query = query.to_cypher if query.respond_to? :to_cypher
-    # begin    
       res = @neo.call(query: query, params: params, mode: :cypher, filter: :all)
-    # rescue Exception => e
-    #   puts
-    #   pp query
-    #   pp params
-    #   puts      
-    # end
     Result::parse_results(res)
   end
 
