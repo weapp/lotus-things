@@ -4,8 +4,12 @@ module Result
   def self.parse_results res
     columns = res["columns"]#.map{|s| s.to_sym}
     
-    res["data"].map do |result|
-      parse_result result, columns
+    if res["data"]
+      res["data"].map do |result|
+        parse_result result, columns
+      end
+    else
+      raise SyntaxError.new(res["message"])
     end
   end
 

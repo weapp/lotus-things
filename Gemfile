@@ -8,17 +8,17 @@ gem 'lotus-model',      github: 'lotus/model'
 gem 'lotus-controller', github: 'lotus/controller'
 gem 'lotus-view',       github: 'lotus/view'
 gem 'lotus-router',     github: 'lotus/router'
-gem 'cypherites',       github: 'weapp/cypherites'
 
+gem 'cypherites',       github: 'weapp/cypherites'
+gem 'headjack',       github: 'weapp/headjack'
+
+gem 'active_attr'
 
 gem 'activesupport', '~> 4.1.4'
 gem 'cancancan', '~> 1.8'
 
 
 gem 'display_case'
-
-
-gem 'neography'
 
 gem 'rspec', '~> 3.0'
 gem "guard-rspec"

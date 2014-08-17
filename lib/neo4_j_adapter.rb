@@ -1,29 +1,10 @@
-require 'neography'
 require 'cypherites'
+require 'headjack'
 
 require_relative 'result'
 
-Neography.configure do |config|
-  config.protocol             = "http://"
-  config.server               = "localhost"
-  config.port                 = 7474
-  config.directory            = ""  # prefix this path with '/'
-  config.cypher_path          = "/cypher"
-  config.gremlin_path         = "/ext/GremlinPlugin/graphdb/execute_script"
-  config.log_file             = "neography.log"
-  config.log_enabled          = false
-  config.slow_log_threshold   = 0    # time in ms for query logging
-  config.max_threads          = 20
-  config.authentication       = nil  # 'basic' or 'digest'
-  config.username             = nil
-  config.password             = nil
-  config.parser               = MultiJsonParser
-  config.http_send_timeout    = 1200
-  config.http_receive_timeout = 1200
-end
-
 class Neo4JAdapter
-  def initialize(rest_client = Neography::Rest)
+  def initialize(rest_client = Headjack::Connection)
     @neo = rest_client.new
   end
 
@@ -69,17 +50,15 @@ class Neo4JAdapter
   end
 
   def delete collection, entity
-    @neo.delete_node!(entity.id)
+    # @neo.delete_node!(entity.id)
     # @neo.execute_query("MATCH (object) WHERE id(object) = #{entity.id} DELETE object")
 
-    # query
-    #   .start("object=node(?)", entity.id)
-    #   # .match("(object)")
-    #   # .where("id(object) = ?", entity.id)
-    #   .optional_match("(object)-[relation]-()")
-    #   .delete(:object)
-    #   .delete(:relation)
-    #   .execute
+    query
+      .start("object=node(?)", entity.id)
+      .optional_match("(object)-[relation]-()")
+      .delete(:object)
+      .delete(:relation)
+      .execute
   end
 
   def all collection
@@ -93,8 +72,6 @@ class Neo4JAdapter
     # value[:_node_] ||= {}
     # value[:_node_][:labels] ||= [entity.class.to_s]
     # hash_2_object value
-
-    # Neography::Node.load(id, @neo)
 
     # res = @neo.execute_query("MATCH (object) WHERE id(object) = #{id} RETURN id(object) as object_id, labels(object) as object_labels, object ORDER BY id(object) DESC LIMIT 1")
     query
@@ -136,7 +113,7 @@ class Neo4JAdapter
   def execute_query query, params={}
     query = query.to_cypher if query.respond_to? :to_cypher
     # begin    
-      res = @neo.execute_query(query, params)
+      res = @neo.call(query: query, params: params, mode: :cypher, filter: :all)
     # rescue Exception => e
     #   puts
     #   pp query
@@ -147,11 +124,23 @@ class Neo4JAdapter
   end
 
   def create_relationship(role, node1, node2)
-    @neo.create_relationship(role, node1.id, node2.id)
+    query
+      .match("(a)")
+      .match("(b)")
+      .where("id(a) = ?", node1.id)
+      .where("id(b) = ?", node2.id)
+      .create("(a)-[r:#{role}]->(b)")
+      .return("r")
+      .first
   end
 
   def set_relationship_properties(rel, attrs)
-    @neo.set_relationship_properties(rel, attrs)
+    res = query
+      .match("(a)-[r]->(b)")
+      .where("id(r) = ?", rel.id)
+      .set("r={attrs}")
+      .return("r")
+      .execute(attrs: attrs)
   end
 
   private
