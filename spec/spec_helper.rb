@@ -1,9 +1,13 @@
 require "active_attr/rspec"
 
-require './models/thing_repository'
-require './models/thing'
-require './models/person'
-require './models/recipe'
+require 'lotus/model/adapters/neo4j_adapter'
+require 'lotus/model/mapping/active_coercer'
+
+require 'foodies/repositories/thing_repository'
+require 'foodies/thing'
+require 'foodies/person'
+require 'foodies/recipe'
+
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|

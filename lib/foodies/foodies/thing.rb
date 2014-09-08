@@ -37,4 +37,9 @@ class Thing
   def == other
     self.id == other.id if self.id && other.kind_of?(Thing)
   end
+
+  def inspect
+    "#<#{self.class} id: #{id.inspect}, name: #{name.inspect}>"
+  end
+
 end

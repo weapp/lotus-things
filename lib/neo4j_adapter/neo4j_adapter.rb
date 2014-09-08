@@ -1,0 +1,1 @@
+require 'lotus/model/adapters/neo4j_adapter'

@@ -1,4 +1,4 @@
-require './thing_work_respository'
+require_relative './thing_repository'
 
 class CreativeWorkRepository < ThingRepository
 end

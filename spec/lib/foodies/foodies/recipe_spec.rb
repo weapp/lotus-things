@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Recipe do
+describe Foodies::Recipe do
 
   let(:recipe_attrs) { 
     {
@@ -31,13 +31,13 @@ describe Recipe do
   it { is_expected.to be_truthy }
   it { is_expected.to be_valid }
 
-  it { expect(Recipe.new({})).to be_valid }
+  it { expect(Foodies::Recipe.new({})).to be_valid }
   
-  it { expect(Recipe.new(recipe_attrs)).to be_valid }
+  it { expect(Foodies::Recipe.new(recipe_attrs)).to be_valid }
   
-  it { expect(Recipe.new(recipe_attrs).attributes).to include(*recipe_attrs.keys) }
+  it { expect(Foodies::Recipe.new(recipe_attrs).attributes).to include(*recipe_attrs.keys) }
 
-  it { expect(Recipe.new().date_published).to match DateTime }
+  it { expect(Foodies::Recipe.new().date_published).to match DateTime }
 
   # it { expect(recipe_attrs).to match Recipe.new(recipe_attrs).attributes }
 

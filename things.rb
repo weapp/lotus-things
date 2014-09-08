@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'bundler/setup'
 
 require 'lotus/utils/class'

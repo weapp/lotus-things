@@ -1,12 +1,25 @@
 require 'spec_helper'
 
-describe Neo4JAdapter do
+
+describe Lotus::Model::Adapters::Neo4jAdapter do
 
   before do
-    @neo_adapter = Neo4JAdapter.new(nil)
-    @collection = "Test"
+    @mapper = Lotus::Model::Mapper.new(Lotus::Model::Mapping::ActiveCoercer) do
+      collection :test do
+        entity     Thing
+        repository ThingRepository
+      end
+    end
+
+    @neo_adapter = Lotus::Model::Adapters::Neo4jAdapter.new(@mapper)
+
+    ThingRepository.adapter = @neo_adapter
+
+    @mapper.load!
+
+    @collection = :test
     @repository = nil
-    @neo_adapter.clear @collection    
+    @neo_adapter.clear @collection
   end
 
   after do
@@ -126,10 +139,10 @@ describe Neo4JAdapter do
     end
   end
 
-  describe "#query" do
-    it "return a Query object" do
-      q = neo_adapter.query collection, repository
-      expect(q).to be_a Cypherites::Query
-    end
-  end
+  # describe "#query" do
+  #   it "return a Query object" do
+  #     q = neo_adapter.query collection, repository
+  #     expect(q).to be_a Cypherites::Query
+  #   end
+  # end
 end

@@ -7,6 +7,16 @@ describe ThingRepository do
   let(:user){build_person}
 
   before do
+    @mapper = Lotus::Model::Mapper.new(Lotus::Model::Mapping::ActiveCoercer) do
+      collection :test do
+        entity     Thing
+        repository ThingRepository
+      end
+    end
+
+    @neo_adapter = Lotus::Model::Adapters::Neo4jAdapter.new(@mapper)
+    ThingRepository.adapter = @neo_adapter
+    @mapper.load!
     ThingRepository.clear
   end
 

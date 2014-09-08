@@ -1,10 +1,10 @@
 require 'lotus/model'
-require './lib/neo4_j_adapter'
+# require './lib/neo4_j_adapter'
 
 class ThingRepository
   include Lotus::Repository
-  self.adapter = Neo4JAdapter.new(nil)
-  self.collection = "things"
+  # self.adapter = Neo4JAdapter.new(nil)
+  # self.collection = "things"
 
   def self.find_by_name name
     search_match({name: name}).first
@@ -12,12 +12,12 @@ class ThingRepository
 
   def self.after_400
     q = query
-      .match("(?)", :object)
-      .where("id(?) > ?", :object, 400)
-      .optional_match("(?)-[?]->(?)", :object, :r, :other)
-      .return_node(:object, :other)
+      .match("(?)", :node)
+      .where("id(?) > ?", :node, 400)
+      .optional_match("(?)-[?]->(?)", :node, :r, :other)
+      .return_node(:node, :other)
       .return_rel(:r)
-      .order_by("id(?) ?", :object, :DESC)
+      .order_by("id(?) ?", :node, :DESC)
       .limit(20)
     q.execute
   end
@@ -33,12 +33,17 @@ class ThingRepository
 
 
   def self.worlds
+    # query
+    #   .match("(node)")
+    #   .where(name: "World")
+    #   .limit(100)
+    #   .scoped
+      # .execute
+      # .return_node("node")
     query
-      .match("(object)")
-      .where("object.name = ?", "World")
-      .return_node("object")
+      .match("(node {name: 'World'})")
       .limit(100)
-      .execute
+
   end
 
 
@@ -46,8 +51,7 @@ class ThingRepository
     # rel = @adapter.create_relationship("created_by", thing, user)
     # @adapter.set_relationship_properties(rel, {"at" => time})
 
-    rel = @adapter.create_relationship("CREATED", user, thing)
-    @adapter.set_relationship_properties(rel, {"at" => time})
+    rel = @adapter.create_relationship(collection, "CREATED", user, thing, {"at" => time.to_s})
 
     assign_updater thing, user, time
   end
@@ -56,8 +60,7 @@ class ThingRepository
     # rel = @adapter.create_relationship("updated_by", thing, user)
     # @adapter.set_relationship_properties(rel, {"at" => time})
 
-    rel = @adapter.create_relationship("UPDATED", user, thing)
-    @adapter.set_relationship_properties(rel, {"at" => time})
+    rel = @adapter.create_relationship(collection, "UPDATED", user, thing, {"at" => time.to_s})
   end
 
   def self.create_with_creator thing, user
@@ -67,9 +70,7 @@ class ThingRepository
 
   def self.created_by thing
     query
-      .start("object=node(?)", thing.id.to_i)
-      .match("(object)<-[CREATED]-(user)")
-      .return_node("user")
+      .match("(node {id: ?})<-[CREATED]-(user)", thing.id.to_i)
       .first
   end
 
@@ -77,8 +78,8 @@ class ThingRepository
 
   def self.search_match(obj)
     query
-      .match("(? ?)", :object, obj)
-      .return_node(:object)
+      .match("(node ?)", obj)
+      # .return_node(:node)
   end
 
 end
